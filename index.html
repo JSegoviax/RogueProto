@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival Deckbuilder</title>
+    <link rel="stylesheet" href="styles/app.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <!-- Top: Enemy Area -->
+        <div id="enemy-area">
+            <div id="enemy-sprite">
+                <!-- Zombie placeholder -->
+                <div class="zombie-icon">🧟</div>
+            </div>
+            <div id="enemy-stats">
+                <h2 id="enemy-name">Shambling Zombie</h2>
+                <div class="health-bar-container">
+                    <div id="enemy-health-bar" class="health-bar fill-red"></div>
+                    <span id="enemy-hp-text">20 / 20</span>
+                </div>
+                <div id="enemy-intent">
+                    <span class="intent-icon">🦷</span>
+                    <span id="intent-text">Intends to Attack (vulnerable to bullets)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle: Encounter Log / Action Area -->
+        <div id="combat-log">
+            <ul id="log-list">
+                <li>You entered the hallway. A zombie blocks the path.</li>
+                <li>Zombie intends to deal 5 damage.</li>
+            </ul>
+        </div>
+
+        <!-- Bottom: Player Area & Hand -->
+        <div id="player-area">
+            <div id="player-stats">
+                <div class="stat-row">
+                    <span class="stat-label">HP:</span>
+                    <div class="health-bar-container small">
+                        <div id="player-health-bar" class="health-bar fill-green"></div>
+                        <span id="player-hp-text">30 / 30</span>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">AP:</span>
+                    <span id="player-ap-text" class="stat-value bright-blue">3 / 3</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">AMMO:</span>
+                    <span id="player-ammo-text" class="stat-value bright-yellow">5 / 5</span>
+                </div>
+                <button id="btn-end-turn">END TURN</button>
+            </div>
+
+            <div id="player-hand">
+                <!-- Cards injected here via JS -->
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="overlay" class="hidden">
+            <div id="reward-modal" class="modal hidden">
+                <h2>VICTORY</h2>
+                <p>The zombie collapses. You find some supplies.</p>
+                <div id="reward-choices">
+                    <!-- Reward cards injected here -->
+                </div>
+                <button id="btn-skip-reward">Skip Reward</button>
+            </div>
+
+            <div id="game-over-modal" class="modal hidden">
+                <h2 style="color: red; font-size: 3rem;">YOU DIED</h2>
+                <p>You have become one of them.</p>
+                <button id="btn-restart" class="btn-primary">Restart Run</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/cards.js"></script>
+    <script src="src/enemies.js"></script>
+    <script src="src/engine.js"></script>
+    <script src="src/ui.js"></script>
+    <script src="src/main.js"></script>
+</body>
+
+</html>
