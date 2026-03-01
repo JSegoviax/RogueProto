@@ -6,8 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial log
     window.game.ui.log("You push open the heavy oak doors of the mansion.");
-    window.game.ui.log("A shambling shape turns toward you...", "damage-enemy");
 
-    // Start with a basic zombie
-    window.game.startCombat(EnemyDatabase.ShamblingZombie());
+    // Boot into Map
+    window.game.startRun();
 });

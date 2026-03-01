@@ -81,15 +81,70 @@ class GameEngine {
         this.hand = [];
         this.enemy = null;
 
+        // Map Progression
+        this.mapGenerator = null;
+        this.currentFloor = 0;
+        this.lastVisitedNode = null;
+
         this.turnState = 'player'; // 'player' or 'enemy'
         this.ui = null; // Will inject UIManager reference here in main.js
+    }
+
+    startRun() {
+        this.mapGenerator = new MapGenerator(7); // 7 Floors to boss
+        this.mapGenerator.generate();
+        this.currentFloor = 0;
+        this.lastVisitedNode = null;
+        this.deck = [...this.getStartingDeck()];
+        this.shuffleDeck();
+
+        // Open map immediately
+        this.ui.showMapModal();
+    }
+
+    travelToNode(node) {
+        this.currentFloor = node.floor;
+        this.lastVisitedNode = node;
+        node.completed = true;
+        this.ui.hideModals();
+
+        // Next floor for the next map display
+        this.currentFloor++;
+
+        // Trigger encounter based on type
+        if (node.type === 'safe') {
+            this.ui.log("You entered a safe room. Found 15 HP and 5 Ammo!", 'heal');
+            this.player.hp = Math.min(this.player.maxHp, this.player.hp + 15);
+            this.player.ammo = Math.min(this.player.maxAmmo, this.player.ammo + 5);
+            this.ui.updateAll();
+            // Just move onto the map again instantly for prototype purposes
+            setTimeout(() => this.ui.showMapModal(), 2000);
+        } else {
+            // Pick new random enemy
+            const enemyKeys = Object.keys(window.EnemyDatabase);
+            const randomEnemyKey = enemyKeys[Math.floor(Math.random() * enemyKeys.length)];
+            const enemy = window.EnemyDatabase[randomEnemyKey]();
+
+            // Buff elites/bosses
+            if (node.type === 'elite') {
+                enemy.name = `Mutated ${enemy.name}`;
+                enemy.hp *= 2;
+                enemy.maxHp *= 2;
+            } else if (node.type === 'boss') {
+                enemy.name = `TYRANT`;
+                enemy.hp = 150;
+                enemy.maxHp = 150;
+                enemy.spriteIcon = '👺';
+            }
+
+            this.ui.log(`You push deeper into the outbreak. A ${enemy.name} approaches!`);
+            this.startCombat(enemy);
+        }
     }
 
     startCombat(enemyObj) {
         this.enemy = enemyObj;
         this.enemy.planTurn();
-        this.deck = [...this.getStartingDeck()];
-        this.shuffleDeck();
         this.startPlayerTurn();
     }
 
@@ -294,19 +349,13 @@ class GameEngine {
     nextRoom() {
         this.ui.hideModals();
 
-        // Pick new random enemy
-        const enemyKeys = Object.keys(window.EnemyDatabase);
-        const randomEnemyKey = enemyKeys[Math.floor(Math.random() * enemyKeys.length)];
-        this.enemy = window.EnemyDatabase[randomEnemyKey]();
-        this.enemy.planTurn();
-
         // Reform the deck
         this.deck = [...this.deck, ...this.hand, ...this.discardPile];
         this.hand = [];
         this.discardPile = [];
         this.shuffleDeck();
 
-        this.ui.log(`You push deeper into the outbreak. A ${this.enemy.name} approaches!`);
-        this.startPlayerTurn();
+        // Show map to travel to next node
+        this.ui.showMapModal();
     }
 }

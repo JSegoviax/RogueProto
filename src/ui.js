@@ -173,5 +173,115 @@ class UIManager {
         this.overlay.classList.add('hidden');
         this.rewardModal.classList.add('hidden');
         this.gameOverModal.classList.add('hidden');
+        document.getElementById('map-modal').classList.add('hidden');
+    }
+
+    /* --- Map Rendering --- */
+
+    showMapModal() {
+        this.overlay.classList.remove('hidden');
+        document.getElementById('map-modal').classList.remove('hidden');
+        this.renderMapNodes();
+    }
+
+    renderMapNodes() {
+        const container = document.getElementById('map-nodes');
+        container.innerHTML = '';
+
+        const map = this.engine.mapGenerator;
+        const currentFloor = this.engine.currentFloor;
+
+        // Render rows top-down (Floor max down to Floor 0)
+        for (let f = map.totalFloors - 1; f >= 0; f--) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'map-row';
+
+            map.floorNodes[f].forEach(nodeId => {
+                const node = map.nodes[nodeId];
+                const nodeEl = document.createElement('div');
+                nodeEl.className = `map-node type-${node.type}`;
+                nodeEl.id = `ui-${node.id}`;
+
+                // Icon based on type
+                if (node.type === 'enemy') nodeEl.innerText = '🧟';
+                if (node.type === 'elite') nodeEl.innerText = '💀';
+                if (node.type === 'safe') nodeEl.innerText = '⛺';
+                if (node.type === 'boss') nodeEl.innerText = '👹';
+
+                // State (active choice, visited, disabled)
+                if (node.completed) {
+                    nodeEl.classList.add('disabled');
+                    nodeEl.style.opacity = '0.5';
+                    nodeEl.innerText = '✅';
+                } else if (f === currentFloor) {
+                    // This is a selectable node on the current floor
+                    // Only active if it's connected to the last visited node, OR if it's floor 0
+                    if (f === 0 || this.engine.lastVisitedNode.connectedNodes.includes(node.id)) {
+                        nodeEl.classList.add('active-choice');
+                        nodeEl.addEventListener('click', () => {
+                            this.engine.travelToNode(node);
+                        });
+                    } else {
+                        nodeEl.classList.add('disabled');
+                    }
+                } else {
+                    nodeEl.classList.add('disabled'); // Future floors
+                }
+
+                rowDiv.appendChild(nodeEl);
+            });
+
+            container.appendChild(rowDiv);
+        }
+
+        // Draw lines after DOM is updated and layout is calculated
+        setTimeout(() => this.drawMapLines(), 50);
+    }
+
+    drawMapLines() {
+        const svg = document.getElementById('map-lines');
+        svg.innerHTML = '';
+        const map = this.engine.mapGenerator;
+
+        // Ensure we get coordinates relative to the scrolling map-container
+        const svgRect = svg.getBoundingClientRect();
+
+        for (let f = 0; f < map.totalFloors - 1; f++) {
+            map.floorNodes[f].forEach(nodeId => {
+                const node = map.nodes[nodeId];
+                const el1 = document.getElementById(`ui-${node.id}`);
+
+                node.connectedNodes.forEach(targetId => {
+                    const el2 = document.getElementById(`ui-${targetId}`);
+
+                    if (el1 && el2) {
+                        const r1 = el1.getBoundingClientRect();
+                        const r2 = el2.getBoundingClientRect();
+
+                        const x1 = (r1.left + r1.width / 2) - svgRect.left;
+                        const y1 = (r1.top + r1.height / 2) - svgRect.top;
+                        const x2 = (r2.left + r2.width / 2) - svgRect.left;
+                        const y2 = (r2.top + r2.height / 2) - svgRect.top;
+
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('stroke', '#555');
+                        line.setAttribute('stroke-width', '4');
+
+                        // Highlight path if completed
+                        if (node.completed && map.nodes[targetId].completed) {
+                            line.setAttribute('stroke', 'var(--accent-blue)');
+                            line.setAttribute('stroke-width', '6');
+                        }
+
+                        // SVG rendering requires appendChild
+                        svg.appendChild(line);
+                    }
+                });
+            });
+        }
     }
 }
