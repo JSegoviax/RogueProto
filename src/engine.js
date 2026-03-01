@@ -1,14 +1,31 @@
 // Engine Architecture for Zombie Deckbuilder
 
 class Card {
-    constructor(id, name, type, apCost, ammoCost, description, effect) {
+    constructor(id, name, type, apCost, ammoCost, descriptionFn, effectFn) {
         this.id = id;
         this.name = name;
+        this.level = 1;
         this.type = type; // 'attack', 'defense', 'utility'
         this.apCost = apCost;
-        this.ammoCost = ammoCost; // 0 if it doesn't use ammo (like a knife)
-        this.description = description;
-        this.effect = effect; // function(engine)
+        this.ammoCost = ammoCost;
+        this.descriptionFn = descriptionFn;
+        this.effectFn = effectFn;
+    }
+
+    get description() {
+        return this.descriptionFn(this);
+    }
+
+    get displayName() {
+        return this.level > 1 ? `${this.name} +${this.level - 1}` : this.name;
+    }
+
+    upgrade() {
+        this.level++;
+    }
+
+    effect(engine) {
+        this.effectFn(engine, this);
     }
 }
 
@@ -205,7 +222,91 @@ class GameEngine {
         if (this.enemy && this.enemy.hp <= 0) {
             this.ui.log(`You killed the ${this.enemy.name}!`);
             this.enemy = null;
-            this.ui.showVictoryModal();
+            this.turnState = 'drafting';
+            this.prepareDraft();
         }
+    }
+
+    prepareDraft() {
+        const cardTypes = Object.keys(window.CardDatabase);
+        this.currentDraftChoices = [];
+
+        // Combine all owned cards to see what we can upgrade
+        const allOwnedCards = [...this.deck, ...this.discardPile, ...this.hand];
+
+        for (let i = 0; i < 3; i++) {
+            // 25% chance to offer an upgrade if we have cards
+            if (Math.random() < 0.25 && allOwnedCards.length > 0) {
+                // Pick random card to upgrade
+                const targetCard = allOwnedCards[Math.floor(Math.random() * allOwnedCards.length)];
+                this.currentDraftChoices.push({
+                    type: 'upgrade',
+                    targetCard: targetCard,
+                    display: {
+                        name: `[UPGRADE] ${targetCard.displayName}`,
+                        desc: `Enhance this card to level ${targetCard.level + 1}.`,
+                        icon: '✨'
+                    }
+                });
+            } else {
+                // Pick new card
+                const randomType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+                const newCard = window.CardDatabase[randomType](`card_${Date.now()}_${i}`);
+
+                let icon = '📄';
+                if (newCard.type === 'attack') icon = '🔫';
+                if (newCard.name.includes('Knife')) icon = '🔪';
+                if (newCard.type === 'defense') icon = '🛡️';
+                if (newCard.type === 'utility') icon = '🎒';
+
+                this.currentDraftChoices.push({
+                    type: 'new',
+                    card: newCard,
+                    display: {
+                        name: newCard.displayName,
+                        desc: newCard.description,
+                        icon: icon
+                    }
+                });
+            }
+        }
+
+        this.ui.showVictoryModal(this.currentDraftChoices);
+    }
+
+    resolveDraft(choiceIndex) {
+        if (choiceIndex !== -1) { // -1 means skip
+            const choice = this.currentDraftChoices[choiceIndex];
+            if (choice.type === 'upgrade') {
+                choice.targetCard.upgrade();
+                this.ui.log(`Upgraded ${choice.targetCard.displayName}!`, 'heal');
+            } else {
+                this.discardPile.push(choice.card);
+                this.ui.log(`Added ${choice.card.displayName} to deck!`, 'heal');
+            }
+        } else {
+            this.ui.log(`Skipped drafting.`);
+        }
+
+        this.nextRoom();
+    }
+
+    nextRoom() {
+        this.ui.hideModals();
+
+        // Pick new random enemy
+        const enemyKeys = Object.keys(window.EnemyDatabase);
+        const randomEnemyKey = enemyKeys[Math.floor(Math.random() * enemyKeys.length)];
+        this.enemy = window.EnemyDatabase[randomEnemyKey]();
+        this.enemy.planTurn();
+
+        // Reform the deck
+        this.deck = [...this.deck, ...this.hand, ...this.discardPile];
+        this.hand = [];
+        this.discardPile = [];
+        this.shuffleDeck();
+
+        this.ui.log(`You push deeper into the outbreak. A ${this.enemy.name} approaches!`);
+        this.startPlayerTurn();
     }
 }

@@ -125,8 +125,53 @@ class UIManager {
         this.gameOverModal.classList.remove('hidden');
     }
 
-    showVictoryModal() {
+    showVictoryModal(choices) {
         this.overlay.classList.remove('hidden');
         this.rewardModal.classList.remove('hidden');
+
+        const choicesContainer = document.getElementById('reward-choices');
+        choicesContainer.innerHTML = '';
+        choicesContainer.style.display = 'flex';
+        choicesContainer.style.gap = '20px';
+        choicesContainer.style.justifyContent = 'center';
+        choicesContainer.style.margin = '20px 0';
+
+        choices.forEach((choice, index) => {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card';
+            // Visual distinction for upgrades
+            if (choice.type === 'upgrade') {
+                cardEl.style.borderColor = '#f1c40f'; // Yellow gold
+                cardEl.style.boxShadow = '0 0 15px rgba(241, 196, 15, 0.5)';
+            }
+
+            cardEl.innerHTML = `
+                <div class="card-header">
+                    <span class="card-name" style="font-size: 13px;">${choice.display.name}</span>
+                </div>
+                <div class="card-image">${choice.display.icon || '📄'}</div>
+                <div class="card-desc">${choice.display.desc}</div>
+            `;
+
+            cardEl.addEventListener('click', () => {
+                this.engine.resolveDraft(index);
+            });
+
+            choicesContainer.appendChild(cardEl);
+        });
+
+        const skipBtn = document.getElementById('btn-skip-reward');
+        const newSkipBtn = skipBtn.cloneNode(true);
+        skipBtn.parentNode.replaceChild(newSkipBtn, skipBtn);
+
+        newSkipBtn.addEventListener('click', () => {
+            this.engine.resolveDraft(-1);
+        });
+    }
+
+    hideModals() {
+        this.overlay.classList.add('hidden');
+        this.rewardModal.classList.add('hidden');
+        this.gameOverModal.classList.add('hidden');
     }
 }
