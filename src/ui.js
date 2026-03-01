@@ -48,7 +48,22 @@ class UIManager {
     updateAll() {
         this.updatePlayerStats();
         this.updateEnemyStats();
+        // Render cards
         this.renderHand();
+    }
+
+    playEnemyAnimation(animClass) {
+        const sprite = document.getElementById('enemy-sprite');
+        if (!sprite) return;
+
+        // Reset classes
+        sprite.className = `sprite-container ${animClass}`;
+
+        // Revert to idle after 600ms
+        clearTimeout(this.enemyAnimTimeout);
+        this.enemyAnimTimeout = setTimeout(() => {
+            sprite.className = 'sprite-container idle';
+        }, 600);
     }
 
     updatePlayerStats() {

@@ -6,7 +6,7 @@ window.CardDatabase = {
         (c) => `Fire a single 9mm round for ${4 + c.level} Damage.`,
         (engine, c) => {
             const dmg = 4 + c.level;
-            engine.enemy.takeDamage(dmg);
+            engine.dealDamageToEnemy(dmg);
             engine.ui.log(`Fired handgun for ${dmg} damage!`);
         }
     ),
@@ -15,7 +15,7 @@ window.CardDatabase = {
         (c) => `Slashing attack for ${1 + c.level} Damage. Costs 0 Ammo.`,
         (engine, c) => {
             const dmg = 1 + c.level;
-            engine.enemy.takeDamage(dmg);
+            engine.dealDamageToEnemy(dmg);
             engine.ui.log(`Slashed with knife for ${dmg} damage!`);
         }
     ),
@@ -42,7 +42,7 @@ window.CardDatabase = {
         (c) => `Blast a wide spread for ${10 + (c.level * 2)} Damage.`,
         (engine, c) => {
             const dmg = 10 + (c.level * 2);
-            engine.enemy.takeDamage(dmg);
+            engine.dealDamageToEnemy(dmg);
             engine.ui.log(`Blasted shotgun for ${dmg} damage!`);
         }
     ),

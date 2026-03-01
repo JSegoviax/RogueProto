@@ -13,14 +13,13 @@
 
 <body>
     <div id="game-container">
-        <!-- Top: Enemy Area -->
-        <div id="enemy-area">
-            <div id="enemy-sprite">
-                <!-- Zombie placeholder -->
-                <div class="zombie-icon">🧟</div>
-            </div>
+        <!-- Enemy Area -->
+        <div class="enemy-area">
+            <div id="enemy-sprite" class="sprite-container idle"></div>
+            <h2 id="enemy-name" class="enemy-name">ZOMBIE</h2>
+
+            <!-- Health Bar -->
             <div id="enemy-stats">
-                <h2 id="enemy-name">Shambling Zombie</h2>
                 <div class="health-bar-container">
                     <div id="enemy-health-bar" class="health-bar fill-red"></div>
                     <span id="enemy-hp-text">20 / 20</span>

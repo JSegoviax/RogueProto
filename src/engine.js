@@ -142,6 +142,12 @@ class GameEngine {
         }
     }
 
+    dealDamageToEnemy(amount) {
+        if (!this.enemy) return;
+        this.enemy.takeDamage(amount);
+        this.ui.playEnemyAnimation('hurt');
+    }
+
     startCombat(enemyObj) {
         this.enemy = enemyObj;
         this.enemy.planTurn();
@@ -249,6 +255,8 @@ class GameEngine {
 
         const intent = this.enemy.currentIntent;
         if (intent.type === 'attack') {
+            this.ui.playEnemyAnimation('attack');
+
             const rawDamage = intent.value;
             // Apply block first
             let damageTaken = Math.max(0, rawDamage - this.player.block);

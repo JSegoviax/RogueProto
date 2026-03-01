@@ -1,6 +1,6 @@
 // Enemy definitions
 
-const EnemyDatabase = {
+window.EnemyDatabase = {
     ShamblingZombie: () => new Enemy(
         'zombie_1',
         'Shambling Zombie',

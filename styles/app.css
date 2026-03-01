@@ -88,6 +88,37 @@ html {
     letter-spacing: 2px;
 }
 
+/* =========================================
+   SPRITE ANIMATIONS
+   ========================================= */
+.sprite-container {
+    width: 250px;
+    height: 250px;
+    margin: 0 auto;
+    background-image: url('../assets/sprites/zombie_spritesheet.png');
+    background-size: 300% 100%;
+    /* 3 frames horizontally */
+    background-repeat: no-repeat;
+    /* Blend mode screen removes the black background from the AI generated image */
+    mix-blend-mode: screen;
+    filter: drop-shadow(0 0 10px rgba(231, 76, 60, 0.4));
+    transition: background-position 0s;
+    /* Instant snap between frames */
+}
+
+/* The frames are evenly spaced in a 3-column row */
+.sprite-container.idle {
+    background-position: 0% 0%;
+}
+
+.sprite-container.hurt {
+    background-position: 50% 0%;
+}
+
+.sprite-container.attack {
+    background-position: 100% 0%;
+}
+
 #enemy-intent {
     margin-top: 10px;
     font-weight: bold;
